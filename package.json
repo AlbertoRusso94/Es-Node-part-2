@@ -1,7 +1,8 @@
 {
   "name": "es-node-part-2",
   "scripts": {
-    "build":"tsc",
+    "lint": "eslint src/ --cache --fix",
+    "build": "tsc",
     "test": "jest"
   },
   "engines": {
@@ -21,6 +22,9 @@
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
-    "@types/node": "^18.6.4"
+    "@types/node": "^18.6.4",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
+    "eslint-config-prettier": "^8.5.0"
   }
 }
