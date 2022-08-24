@@ -11,9 +11,17 @@ describe("POST /planets", () => {
       diameter: 1234,
       moons: 12,
     };
+
+    //@ts-ignore
+    prismaMock.planet.create.mockResolvedValue(planet);
+
     const response = await request
       .post("/planets")
-      .send(planet)
+      .send({
+        name: "Mercury",
+        diameter: 1234,
+        moons: 12,
+      })
       .expect(201)
       .expect("Content-Type", /application\/json/);
     expect(response.body).toEqual(planet);
