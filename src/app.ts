@@ -16,6 +16,16 @@ app.get("/planets", async (request, response) => {
 
   response.json(planets);
 });
+
+app.get("/planets/:id", async (request, response) => {
+  const planetId = Number(request.params.id);
+  const planet = await prisma.planet.findUnique({
+    where: { id: planetId },
+  });
+
+  response.json(planet);
+});
+
 app.post(
   "/planets",
   validate({ body: planetSchema }),
@@ -27,6 +37,28 @@ app.post(
     response.status(201).json(planet);
   }
 );
+
+app.put(
+  "/planets/:id(\\d+)",
+  validate({ body: planetSchema }),
+  async (request, response) => {
+    const planetId = Number(request.params.id);
+    const planetData: PlanetData = request.body;
+    const planet = await prisma.planet.update({
+      where: { id: planetId },
+      data: planetData,
+    });
+    response.status(200).json(planet);
+  }
+);
+
+app.delete("/planets/:id(\\d+)", async (request, response) => {
+  const planetId = Number(request.params.id);
+  await prisma.planet.delete({
+    where: { id: planetId },
+  });
+  response.status(204).end();
+});
 
 app.use(validationErrorMiddleware);
 
