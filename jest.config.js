@@ -6,5 +6,6 @@ module.exports = {
   setUpFilesAfterEnv: [
     "./src/lib/prisma/client.mock.ts",
     "./src/lib/prisma/middleware/multer.mock.ts",
+    "./src/lib/prisma/middleware/passport.mock.ts",
   ],
 };

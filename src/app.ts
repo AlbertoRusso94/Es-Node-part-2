@@ -1,99 +1,23 @@
 import express from "express";
 import "express-async-errors";
-import prisma from "./lib/prisma/client";
-import {
-  validate,
-  planetSchema,
-  PlanetData,
-  validationErrorMiddleware,
-} from "./lib/prisma/validation";
-import cors from "cors";
-
-import { initMultierMiddleware } from "./lib/prisma/middleware/multer";
-const upload = initMultierMiddleware();
-
-const corsOptions = {
-  origin: "http://localhost:8080",
-};
+import { validationErrorMiddleware } from "./lib/prisma/middleware/validation";
+import planetsRoutes from "./routes/planets";
+import { initCorsMiddleware } from "./lib/prisma/middleware/cors";
+import { initSessionMiddleware } from "./lib/prisma/middleware/session";
+import { passport } from "./lib/prisma/middleware/passport";
+import authRoutes from "./routes/auth";
 
 const app = express();
+
+app.use(initSessionMiddleware());
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.json());
 
-app.use(cors(corsOptions));
-
-app.get("/planets", async (request, response) => {
-  const planets = await prisma.planet.findMany();
-
-  response.json(planets);
-});
-
-app.get("/planets/:id", async (request, response) => {
-  const planetId = Number(request.params.id);
-  const planet = await prisma.planet.findUnique({
-    where: { id: planetId },
-  });
-
-  response.json(planet);
-});
-
-app.post(
-  "/planets",
-  validate({ body: planetSchema }),
-  async (request, response) => {
-    const planetData: PlanetData = request.body;
-    const planet = await prisma.planet.create({
-      data: planetData,
-    });
-    response.status(201).json(planet);
-  }
-);
-
-app.put(
-  "/planets/:id(\\d+)",
-  validate({ body: planetSchema }),
-  async (request, response) => {
-    const planetId = Number(request.params.id);
-    const planetData: PlanetData = request.body;
-    const planet = await prisma.planet.update({
-      where: { id: planetId },
-      data: planetData,
-    });
-    response.status(200).json(planet);
-  }
-);
-
-app.delete("/planets/:id(\\d+)", async (request, response) => {
-  const planetId = Number(request.params.id);
-  await prisma.planet.delete({
-    where: { id: planetId },
-  });
-  response.status(204).end();
-});
-
-app.post(
-  "/planets/:id(\\d+)/photo",
-  upload.single("photo"),
-  async (request, response, next) => {
-    if (!request.file) {
-      response.status(400);
-      return next("No photo file uploaded.");
-    }
-
-    const planetId = Number(request.params.id);
-    const photoFilename = request.file.filename;
-    try {
-      await prisma.planet.update({
-        where: { id: planetId },
-        data: { photoFilename },
-      });
-    } catch (error) {
-      response.status(404);
-      next(`Cannot POST /planets/${planetId}/photo`);
-    }
-  }
-);
-
-app.use("/planets/photos", express.static("uploads"));
+app.use(initCorsMiddleware());
+app.use("/planets", planetsRoutes);
+app.use("/auth", authRoutes);
 
 app.use(validationErrorMiddleware);
 
