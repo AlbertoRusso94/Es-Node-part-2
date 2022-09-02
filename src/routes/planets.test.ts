@@ -121,12 +121,11 @@ test("invalid request", async () => {
 
 describe("DELETE /planets/:id", () => {
   test("Valid request", async () => {
-    const response = await request
+    await request
       .delete("/planets/1")
       .expect(204)
       .expect("Access-Controll-Allow-Origin", "http://localhost:8080")
       .expect("Access-Controll-Allow-Credentials", "true");
-    expect(response.text).toEqual("");
   });
 });
 
@@ -162,8 +161,8 @@ describe("POST/planets/:id/photo", () => {
       .post("/planets/23/photo")
       .attach("photo", "test-fixtures/photos/file.txt")
       .expect(500)
-      .expect("Content-Type", /text\/html/);
-    expect(response.text).toContain(
+      .expect("Content-Type", /application\/json/);
+    expect(response.body.message).toContain(
       "Error: The uploaded file must be a JPG or a PNG image."
     );
   });
@@ -185,7 +184,7 @@ describe("POST/planets/:id/photo", () => {
       .attach("photo", "test-fixtures/photos/file.png")
       .expect(404)
       .expect("Content-Type", /test\/html/);
-    expect(response.text).toContain("Cannot POST /planets/23/photo");
+    expect(response.body.message).toContain("Cannot POST /planets/23/photo");
   });
 });
 
@@ -193,13 +192,13 @@ test("invalid planet ID", async () => {
   const response = await request
     .post("/planets/asdf/photo")
     .expect(404)
-    .expect("Content-Type", /text\/html/);
-  expect(response.text).toContain("Cannot POST /planets/asdf/photo");
+    .expect("Content-Type", /application\/json/);
+  expect(response.body.message).toContain("Cannot POST /planets/asdf/photo");
 });
 test("invalid request with no file upload", async () => {
   const response = await request
     .post("/planets/23/photo")
     .expect(400)
-    .expect("Content-Type", /text\/html/);
-  expect(response.text).toContain("No photo file uploaded.");
+    .expect("Content-Type", /application\/json/);
+  expect(response.body.message).toContain("No photo file uploaded.");
 });
